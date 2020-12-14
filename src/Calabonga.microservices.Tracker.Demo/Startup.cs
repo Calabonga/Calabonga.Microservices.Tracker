@@ -1,6 +1,4 @@
-using Calabonga.microservices.Tracker.Demo.AppStart;
 using Calabonga.microservices.Tracker.Demo.Controllers;
-using Calabonga.microservices.Tracker.Demo.Infrastructure;
 using Calabonga.Microservices.Tracker.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -29,12 +27,6 @@ namespace Calabonga.microservices.Tracker.Demo
             });
             
             services.AddHttpContextAccessor();
-
-            services.AddTransient<IRequestProvider, RequestProvider>();
-            services.AddTransient<IRequestFromConsumerService, RequestFromConsumerService>();
-            services.AddTransient<IRequestService, RequestService>();
-
-            ConfigureServicesMassTransit.ConfigureServices(services, Configuration);
 
             services.AddHttpClient("MyClient").AddCommunicationTrackerForwarding();
 

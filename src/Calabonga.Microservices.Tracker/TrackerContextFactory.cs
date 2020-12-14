@@ -3,7 +3,7 @@
 namespace Calabonga.Microservices.Tracker
 {
     /// <summary>
-    /// // Calabonga: update summary (2020-04-08 09:21 TrackerContextFactory)
+    /// Tracker Context Factory for TrackerContext accessing
     /// </summary>
     public class TrackerContextFactory : ITrackerContextFactory
     {

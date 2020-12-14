@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.1-beta1</Version>
+    <Version>1.0.1</Version>
     <Authors>Calabonga</Authors>
     <Company>Calabonga SOFT</Company>
     <Copyright>Calabonga SOFT © 2020-2021</Copyright>
