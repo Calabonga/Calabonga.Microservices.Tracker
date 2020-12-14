@@ -16,9 +16,9 @@ jobs:
       with:
         dotnet-version: 3.1.301
     - name: Install dependencies
-      run: dotnet restore src/Calabonga.Microservices.Tracker.sln
+      run: dotnet restore src/Calabonga.Microservices.Tracker/Calabonga.Microservices.Tracker.csproj
     - name: Build
-      run: dotnet build src/Calabonga.Microservices.Tracker.sln --configuration Release --no-restore 
+      run: dotnet build src/Calabonga.Microservices.Tracker/Calabonga.Microservices.Tracker.csproj --configuration Release --no-restore 
     - name: Publish Calabonga.Microservices.Tracker
       uses: brandedoutcast/publish-nuget@v2.5.2
       with:
