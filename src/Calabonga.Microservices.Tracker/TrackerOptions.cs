@@ -5,14 +5,14 @@ namespace Calabonga.Microservices.Tracker
     /// <summary>
     /// Microservice request and response tracker options
     /// </summary>
-    public class TrackerOptions
+    public sealed class TrackerOptions
     {
         private string _responseHeader;
 
         /// <summary>
         /// The default header used for tracker ID.
         /// </summary>
-        public const string DefaultHeaderName = "X-Microservice-Tracker-Id";
+        public const string DefaultHeaderName = "X-Trace-Id";
 
         /// <summary>
         /// The default logger scope key for tracker ID logging.
@@ -23,7 +23,7 @@ namespace Calabonga.Microservices.Tracker
         /// The name of the header from which the tracker ID is read.
         /// </summary>
         public string RequestHeaderName { get; set; } = DefaultHeaderName;
-        
+
         /// <summary>
         /// The name of the header from which the tracker ID is written.
         /// </summary>

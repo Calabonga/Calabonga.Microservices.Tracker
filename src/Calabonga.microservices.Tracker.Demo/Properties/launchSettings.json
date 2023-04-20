@@ -1,12 +1,4 @@
 {
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:52599/",
-      "sslPort": 44396
-    }
-  },
   "profiles": {
     "Kestrel": {
       "commandName": "Project",

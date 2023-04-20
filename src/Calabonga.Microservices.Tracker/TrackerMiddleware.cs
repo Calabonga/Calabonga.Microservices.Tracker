@@ -37,7 +37,7 @@ namespace Calabonga.Microservices.Tracker
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _trackerIdGenerator = trackerIdGenerator;
-            _options = options.Value ?? throw new ArgumentNullException(nameof(options));
+            _options = options.Value;
         }
 
         /// <summary>
@@ -54,8 +54,7 @@ namespace Calabonga.Microservices.Tracker
             {
                 LogHelper.MissingTrackerIdProvider(_logger);
 
-                throw new InvalidOperationException(
-                    "No 'ITrackerIdGenerator' has been registered. You must either add the tracker ID services using the 'AddCommunicationTracker' extension method or you must register a suitable provider using the 'ITrackerBuilder'.");
+                throw new InvalidOperationException("No 'ITrackerIdGenerator' has been registered. You must either add the tracker ID services using the 'AddCommunicationTracker' extension method or you must register a suitable provider using the 'ITrackerBuilder'.");
             }
 
             var hasTrackerIdHeader = context.Request.Headers.TryGetValue(_options.RequestHeaderName, out var cid) && !StringValues.IsNullOrEmpty(cid);
@@ -101,11 +100,13 @@ namespace Calabonga.Microservices.Tracker
             {
                 context.Response.OnStarting(() =>
                 {
-                    if (!context.Response.Headers.ContainsKey(_options.ResponseHeaderName))
+                    if (context.Response.Headers.ContainsKey(_options.ResponseHeaderName))
                     {
-                        LogHelper.WritingTrackerIdResponseHeader(_logger, _options.ResponseHeaderName, trackerId);
-                        context.Response.Headers.Add(_options.ResponseHeaderName, trackerId);
+                        return Task.CompletedTask;
                     }
+
+                    LogHelper.WritingTrackerIdResponseHeader(_logger, _options.ResponseHeaderName, trackerId);
+                    context.Response.Headers.Add(_options.ResponseHeaderName, trackerId);
 
                     return Task.CompletedTask;
                 });

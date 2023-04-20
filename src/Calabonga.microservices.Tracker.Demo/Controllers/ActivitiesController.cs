@@ -55,7 +55,7 @@ namespace Calabonga.microservices.Tracker.Demo.Controllers
         {
             if (context.Result is OkObjectResult result)
             {
-                ((OperationResult)result.Value).ActivityId = context.HttpContext.TraceIdentifier;
+                //((OperationResult)result.Value).ActivityId = context.HttpContext.TraceIdentifier;
             }
         }
 
@@ -65,7 +65,7 @@ namespace Calabonga.microservices.Tracker.Demo.Controllers
         /// <param name="context">The <see cref="T:Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext" />.</param>
         public void OnActionExecuting(ActionExecutingContext context)
         {
-            
+
         }
     }
 
