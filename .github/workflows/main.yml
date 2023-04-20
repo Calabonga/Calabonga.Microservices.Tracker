@@ -21,10 +21,10 @@ jobs:
       run: dotnet restore src/Calabonga.Microservices.Tracker/Calabonga.Microservices.Tracker.csproj
     
     - name: Build
-      run: dotnet build src/Calabonga.Microservices.Tracker/Calabonga.Microservices.Tracker.csproj --configuration Release --no-restore --output ${{env.DOTNET_ROOT}}\Package
+      run: dotnet build src/Calabonga.Microservices.Tracker/Calabonga.Microservices.Tracker.csproj --configuration Release --no-restore --output ${{env.DOTNET_ROOT}}/Package
 
-    - name: Build the NuGet package
-      run: dotnet pack src/Calabonga.Microservices.Tracker/Calabonga.Microservices.Tracker.csproj --configuration Release --output ${{env.DOTNET_ROOT}}\Package
+    - name: Pack NuGet package
+      run: dotnet pack src/Calabonga.Microservices.Tracker/Calabonga.Microservices.Tracker.csproj --configuration Release --output ${{env.DOTNET_ROOT}}/Package
     
     - name: Publish Calabonga.Microservices.Tracker
-      run: dotnet nuget push ${{env.DOTNET_ROOT}}\Package\*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      run: dotnet nuget push ${{env.DOTNET_ROOT}}/Package/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
