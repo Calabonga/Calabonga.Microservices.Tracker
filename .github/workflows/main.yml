@@ -11,16 +11,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 5.0.102
+        dotnet-version: 7.0.x
+    
     - name: Install dependencies
       run: dotnet restore src/Calabonga.Microservices.Tracker/Calabonga.Microservices.Tracker.csproj
+    
     - name: Build
       run: dotnet build src/Calabonga.Microservices.Tracker/Calabonga.Microservices.Tracker.csproj --configuration Release --no-restore 
+
+    - name: Build the NuGet package
+      run: dotnet pack src/Calabonga.Microservices.Tracker/Calabonga.Microservices.Tracker.csproj --configuration Release --output ${{env.DOTNET_ROOT}}\Package
+    
     - name: Publish Calabonga.Microservices.Tracker
-      uses: brandedoutcast/publish-nuget@v2.5.2
-      with:
-          PROJECT_FILE_PATH: src/Calabonga.Microservices.Tracker/Calabonga.Microservices.Tracker.csproj
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+      run: dotnet nuget push ${{env.DOTNET_ROOT}}\Package\*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
