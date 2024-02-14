@@ -31,13 +31,13 @@ namespace Calabonga.Microservices.Tracker.Helpers
 
         private static readonly Action<ILogger, string, Exception> FoundTrackerIdHeaderExecute =
             LoggerMessage.Define<string>(
-                LogLevel.Information,
+                LogLevel.Debug,
                 EventIdHelper.FoundTrackerIdHeader,
                 "Tracker ID {TrackerId} was found in the request headers");
 
         private static readonly Action<ILogger, Exception> MissingTrackerIdHeaderExecute = 
             LoggerMessage.Define(
-                LogLevel.Information,
+                LogLevel.Debug,
                 EventIdHelper.MissingTrackerIdHeader,
                 "No tracker ID was found in the request headers");
 
