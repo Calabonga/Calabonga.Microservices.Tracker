@@ -22,7 +22,6 @@ namespace Calabonga.Microservices.Tracker.Extensions
         /// multiple times in order to get access to the <see cref="ITrackerBuilder"/> in multiple places.
         /// </remarks>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the correlation ID services to.</param>
-        /// <returns></returns>
         public static ITrackerBuilder AddCommunicationTracker(this IServiceCollection services)
         {
             if (services is null)
@@ -39,6 +38,121 @@ namespace Calabonga.Microservices.Tracker.Extensions
             }
 
             services.TryAddSingleton<ITrackerIdGenerator, DefaultTrackerIdGenerator>();
+
+            return new TrackerBuilder(services);
+        }
+
+        /// <summary>
+        /// Adds required services to support the Tracker ID functionality to the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// /// <remarks>
+        /// This operation is idempotent - multiple invocations will still only result in a single
+        /// instance of the required services in the <see cref="IServiceCollection"/>. It can be invoked
+        /// multiple times in order to get access to the <see cref="ITrackerBuilder"/> in multiple places.
+        /// </remarks>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the correlation ID services to.</param>
+        /// <param name="trackerOptions"></param>
+        public static ITrackerBuilder AddCommunicationTracker(this IServiceCollection services, Action<TrackerOptions> trackerOptions)
+        {
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (trackerOptions is null)
+            {
+                throw new ArgumentNullException(nameof(trackerOptions));
+            }
+
+            services.TryAddSingleton<ITrackerContextAccessor, TrackerContextAccessor>();
+            services.TryAddTransient<ITrackerContextFactory, TrackerContextFactory>();
+
+            if (services.Any(x => x.ServiceType == typeof(ITrackerIdGenerator)))
+            {
+                throw new InvalidOperationException(MultipleProviderExceptionMessage);
+            }
+
+            services.TryAddSingleton<ITrackerIdGenerator, DefaultTrackerIdGenerator>();
+            services.Configure(trackerOptions);
+
+            return new TrackerBuilder(services);
+        }
+
+        /// <summary>
+        /// Adds required services to support the Tracker ID functionality to the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// /// <remarks>
+        /// This operation is idempotent - multiple invocations will still only result in a single
+        /// instance of the required services in the <see cref="IServiceCollection"/>. It can be invoked
+        /// multiple times in order to get access to the <see cref="ITrackerBuilder"/> in multiple places.
+        /// </remarks>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the correlation ID services to.</param>
+        /// <param name="excludeOptions"></param>
+        public static ITrackerBuilder AddCommunicationTracker(this IServiceCollection services, Action<ExcludeOptions> excludeOptions)
+        {
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (excludeOptions is null)
+            {
+                throw new ArgumentNullException(nameof(excludeOptions));
+            }
+
+            services.TryAddSingleton<ITrackerContextAccessor, TrackerContextAccessor>();
+            services.TryAddTransient<ITrackerContextFactory, TrackerContextFactory>();
+
+            if (services.Any(x => x.ServiceType == typeof(ITrackerIdGenerator)))
+            {
+                throw new InvalidOperationException(MultipleProviderExceptionMessage);
+            }
+
+            services.TryAddSingleton<ITrackerIdGenerator, DefaultTrackerIdGenerator>();
+            services.Configure(excludeOptions);
+
+            return new TrackerBuilder(services);
+        }
+
+        /// <summary>
+        /// Adds required services to support the Tracker ID functionality to the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// /// <remarks>
+        /// This operation is idempotent - multiple invocations will still only result in a single
+        /// instance of the required services in the <see cref="IServiceCollection"/>. It can be invoked
+        /// multiple times in order to get access to the <see cref="ITrackerBuilder"/> in multiple places.
+        /// </remarks>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the correlation ID services to.</param>
+        /// <param name="trackerOptions"></param>
+        /// <param name="excludeOptions"></param>
+        public static ITrackerBuilder AddCommunicationTracker(this IServiceCollection services, Action<TrackerOptions> trackerOptions, Action<ExcludeOptions> excludeOptions)
+        {
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (trackerOptions is null)
+            {
+                throw new ArgumentNullException(nameof(trackerOptions));
+            }
+
+            if (excludeOptions is null)
+            {
+                throw new ArgumentNullException(nameof(excludeOptions));
+            }
+
+            services.TryAddSingleton<ITrackerContextAccessor, TrackerContextAccessor>();
+            services.TryAddTransient<ITrackerContextFactory, TrackerContextFactory>();
+
+            if (services.Any(x => x.ServiceType == typeof(ITrackerIdGenerator)))
+            {
+                throw new InvalidOperationException(MultipleProviderExceptionMessage);
+            }
+
+            services.TryAddSingleton<ITrackerIdGenerator, DefaultTrackerIdGenerator>();
+            services.Configure(trackerOptions);
+            services.Configure(excludeOptions);
 
             return new TrackerBuilder(services);
         }
@@ -108,6 +222,46 @@ namespace Calabonga.Microservices.Tracker.Extensions
             services.TryAddSingleton<ITrackerIdGenerator, T>();
 
             services.Configure(trackerOptions);
+
+
+            return new TrackerBuilder(services);
+        }
+
+        /// <summary>
+        /// Adds required services to support the Tracker ID functionality to the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <remarks>
+        /// This operation is idempotent - multiple invocations will still only result in a single
+        /// instance of the required services in the <see cref="IServiceCollection"/>. It can be invoked
+        /// multiple times in order to get access to the <see cref="ITrackerBuilder"/> in multiple places.
+        /// </remarks>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the correlation ID services to.</param>
+        /// <typeparam name="T">The <see cref="ITrackerIdGenerator"/> implementation type.</typeparam>
+        /// <param name="excludeOptions"></param>
+        /// <returns>An instance of <see cref="ITrackerBuilder"/> which to be used to trackerOptions correlation ID providers and options.</returns>
+        public static ITrackerBuilder AddCommunicationTracker<T>(this IServiceCollection services, Action<ExcludeOptions> excludeOptions) where T : class, ITrackerIdGenerator
+        {
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (excludeOptions is null)
+            {
+                throw new ArgumentNullException(nameof(excludeOptions));
+            }
+
+            services.TryAddSingleton<ITrackerContextAccessor, TrackerContextAccessor>();
+            services.TryAddTransient<ITrackerContextFactory, TrackerContextFactory>();
+
+            if (services.Any(x => x.ServiceType == typeof(ITrackerIdGenerator)))
+            {
+                throw new InvalidOperationException(MultipleProviderExceptionMessage);
+            }
+
+            services.TryAddSingleton<ITrackerIdGenerator, T>();
+
+            services.Configure(excludeOptions);
 
 
             return new TrackerBuilder(services);

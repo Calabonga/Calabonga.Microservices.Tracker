@@ -23,7 +23,63 @@ Library helps to generate a trace ID string for the cross-microservice communica
 
 ## Испория версий
 
-### 5.0.0 2024-06-21
+### v6.0.0 2024-06-21
+
+Добавлены несколько расширений для возможности регистрации `TrackerMiddleware` с дополнительные параметрами.
+``` csharp
+diff --git a/src/Calabonga.Microservices.Tracker/Extensions/TrackerServiceCollectionExtensions.cs b/src/Calabonga.Microservices.Tracker/Extensions/TrackerServiceCollectionExtensions.cs
+--- a/src/Calabonga.Microservices.Tracker/Extensions/TrackerServiceCollectionExtensions.cs
++++ b/src/Calabonga.Microservices.Tracker/Extensions/TrackerServiceCollectionExtensions.cs
+@@ -45,0 +45,114 @@
++        /// <summary>
++        /// Adds required services to support the Tracker ID functionality to the <see cref="IServiceCollection"/>.
++        /// </summary>
++        /// /// <remarks>
++        /// This operation is idempotent - multiple invocations will still only result in a single
++        /// instance of the required services in the <see cref="IServiceCollection"/>. It can be invoked
++        /// multiple times in order to get access to the <see cref="ITrackerBuilder"/> in multiple places.
++        /// </remarks>
++        /// <param name="services">The <see cref="IServiceCollection"/> to add the correlation ID services to.</param>
++        /// <param name="trackerOptions"></param>
++        public static ITrackerBuilder AddCommunicationTracker(this IServiceCollection services, Action<TrackerOptions> trackerOptions)
++        {
++            // removed for clarity
++        }
++
++        /// <summary>
++        /// Adds required services to support the Tracker ID functionality to the <see cref="IServiceCollection"/>.
++        /// </summary>
++        /// /// <remarks>
++        /// This operation is idempotent - multiple invocations will still only result in a single
++        /// instance of the required services in the <see cref="IServiceCollection"/>. It can be invoked
++        /// multiple times in order to get access to the <see cref="ITrackerBuilder"/> in multiple places.
++        /// </remarks>
++        /// <param name="services">The <see cref="IServiceCollection"/> to add the correlation ID services to.</param>
++        /// <param name="excludeOptions"></param>
++        public static ITrackerBuilder AddCommunicationTracker(this IServiceCollection services, Action<ExcludeOptions> excludeOptions)
++        {
++            // removed for clarity
++        }
++
++        /// <summary>
++        /// Adds required services to support the Tracker ID functionality to the <see cref="IServiceCollection"/>.
++        /// </summary>
++        /// /// <remarks>
++        /// This operation is idempotent - multiple invocations will still only result in a single
++        /// instance of the required services in the <see cref="IServiceCollection"/>. It can be invoked
++        /// multiple times in order to get access to the <see cref="ITrackerBuilder"/> in multiple places.
++        /// </remarks>
++        /// <param name="services">The <see cref="IServiceCollection"/> to add the correlation ID services to.</param>
++        /// <param name="trackerOptions"></param>
++        /// <param name="excludeOptions"></param>
++        public static ITrackerBuilder AddCommunicationTracker(this IServiceCollection services, Action<TrackerOptions> trackerOptions, Action<ExcludeOptions> excludeOptions)
++        {
++            // removed for clarity
++        }
+
+```
+
+### v5.0.0 2024-05-21
 
 - Добавлена возможность использовать исключения при генерации TraceID по типам `Request.Scheme`,`Request.Host` и `Request.Path`. Например, когда Prometheus делает запросы на ваш сервер, чтобы забрать метркику `/metrics`, то в этом случае совершенно не трбуется генерация TrageId. Пример добавления исключений ниже:
 
@@ -33,6 +89,7 @@ Library helps to generate a trace ID string for the cross-microservice communica
             services.AddCommunicationTracker<CustomTrackerIdGenerator>(
                 options =>
                 {
+                    // The commented out values below is default
                     // options.TrackerIdGenerator = () => "qweqweqwewqeqwe";
                     // options.EnforceHeader = false;
                     // options.IgnoreRequestHeader = false;
@@ -46,10 +103,10 @@ Library helps to generate a trace ID string for the cross-microservice communica
                 excludes =>
                 {
                     excludes
-                        .AddPathExcludes("activities", CheckExcludeType.Contains)
-                        .AddPathExcludes("api", CheckExcludeType.Contains)
-                        .AddSchemeExcludes("https", CheckExcludeType.Equality)
-                        .AddHostExcludes("localhost", CheckExcludeType.StartWith);
+                        .AddPathExcludes("activities", CheckExcludeType.Contains)  // <-- for path
+                        .AddPathExcludes("api", CheckExcludeType.Contains)         // <-- for path
+                        .AddSchemeExcludes("https", CheckExcludeType.Equality)     // <-- for schemes
+                        .AddHostExcludes("localhost", CheckExcludeType.StartWith); // <-- for hosts
                 });
     ```
 

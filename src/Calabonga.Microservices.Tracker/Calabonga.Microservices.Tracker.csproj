@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
-		<Version>5.0.0</Version>
+		<Version>6.0.0</Version>
 		<Authors>Calabonga</Authors>
 		<Company>Calabonga SOFT</Company>
 		<Copyright>Calabonga SOFT © 2020-$([System.DateTime]::Now.ToString(yyyy))</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIcon>logo.png</PackageIcon>
 		<PackageTags>calabonga correlationid traceid microservices request response handler httpclient cross-service communications</PackageTags>
-		<PackageReleaseNotes>Excludes added for some TrackerMiddleware for TrackId generation pipeline.</PackageReleaseNotes>
+		<PackageReleaseNotes>Some additional extensions method added for excludes.</PackageReleaseNotes>
 		<Description>Library helps to generate a trace ID string for the cross-microservice communication. https://www.calabonga.net/blog/post/tracking-correlationid-between-microservices-asp-net-core</Description>
 	</PropertyGroup>
 	<ItemGroup>
