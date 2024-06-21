@@ -20,3 +20,38 @@
 [Инструкция по применению](https://www.calabonga.net/blog/post/tracking-correlationid-between-microservices-asp-net-core)
 
 Library helps to generate a trace ID string for the cross-microservice communication.
+
+## Испория версий
+
+### 5.0.0 2024-06-21
+
+- Добавлена возможность использовать исключения при генерации TraceID по типам `Request.Scheme`,`Request.Host` и `Request.Path`. Например, когда Prometheus делает запросы на ваш сервер, чтобы забрать метркику `/metrics`, то в этом случае совершенно не трбуется генерация TrageId. Пример добавления исключений ниже:
+
+    ``` csharp
+                // services.AddCommunicationTracker();
+            // services.AddCommunicationTracker<CustomTrackerIdGenerator>();
+            services.AddCommunicationTracker<CustomTrackerIdGenerator>(
+                options =>
+                {
+                    // options.TrackerIdGenerator = () => "qweqweqwewqeqwe";
+                    // options.EnforceHeader = false;
+                    // options.IgnoreRequestHeader = false;
+                    // options.RequestHeaderName = "X-Custom-Request-Trace-ID";
+                    // options.ResponseHeaderName = "X-Custom-Response-Trace-ID";
+                    // options.AddToLogger = true;
+                    // options.LoggerScopeName = "MICROSERVICE_LOGGER";
+                    // options.IncludeInResponse = true;
+                    options.UpdateTraceIdentifier = true;
+                },
+                excludes =>
+                {
+                    excludes
+                        .AddPathExcludes("activities", CheckExcludeType.Contains)
+                        .AddPathExcludes("api", CheckExcludeType.Contains)
+                        .AddSchemeExcludes("https", CheckExcludeType.Equality)
+                        .AddHostExcludes("localhost", CheckExcludeType.StartWith);
+                });
+    ```
+
+- Обновлены зависимости
+- Все логи типа "Information" переведены в разряд `Trace`, чтобы уменьшить количество логов на `Production`.

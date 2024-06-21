@@ -26,7 +26,7 @@ namespace Calabonga.microservices.Tracker.Demo.Controllers
         public async Task<ActionResult<OperationResult<ResponseViewModel>>> Get()
         {
             var operation = OperationResult.CreateResult<ResponseViewModel>();
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://www.calabonga.com/api/v2/humor");
+            var request = new HttpRequestMessage(HttpMethod.Get, "https://api.calabonga.com/api3/v3/random");
             var client = _clientFactory.CreateClient("MyClient");
             var response = await client.SendAsync(request);
             if (response.IsSuccessStatusCode)

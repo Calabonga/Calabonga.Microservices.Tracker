@@ -1,4 +1,5 @@
 using Calabonga.microservices.Tracker.Demo.Controllers;
+using Calabonga.Microservices.Tracker;
 using Calabonga.Microservices.Tracker.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,14 +26,15 @@ namespace Calabonga.microservices.Tracker.Demo
             {
                 options.Filters.Add(new TrackerOperationResultFilter());
             });
-            
+
             services.AddHttpContextAccessor();
 
             services.AddHttpClient("MyClient").AddCommunicationTrackerForwarding();
 
             // services.AddCommunicationTracker();
             // services.AddCommunicationTracker<CustomTrackerIdGenerator>();
-            services.AddCommunicationTracker<CustomTrackerIdGenerator>(options =>
+            services.AddCommunicationTracker<CustomTrackerIdGenerator>(
+                options =>
                 {
                     // options.TrackerIdGenerator = () => "qweqweqwewqeqwe";
                     // options.EnforceHeader = false;
@@ -43,6 +45,14 @@ namespace Calabonga.microservices.Tracker.Demo
                     // options.LoggerScopeName = "MICROSERVICE_LOGGER";
                     // options.IncludeInResponse = true;
                     options.UpdateTraceIdentifier = true;
+                },
+                excludes =>
+                {
+                    excludes
+                        .AddPathExcludes("activities", CheckExcludeType.Contains)
+                        .AddPathExcludes("api", CheckExcludeType.Contains)
+                        .AddSchemeExcludes("https", CheckExcludeType.Equality)
+                        .AddHostExcludes("localhost", CheckExcludeType.StartWith);
                 });
         }
 

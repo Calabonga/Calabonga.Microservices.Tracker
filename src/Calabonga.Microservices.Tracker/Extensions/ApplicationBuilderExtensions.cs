@@ -7,13 +7,12 @@ namespace Calabonga.Microservices.Tracker.Extensions
     /// <summary>
     /// Extension methods for the CorrelationIdMiddleware.
     /// </summary>
-    public static  class ApplicationBuilderExtensions
+    public static class ApplicationBuilderExtensions
     {
         /// <summary>
         /// Enables correlation IDs for the request.
         /// </summary>
         /// <param name="app"></param>
-        /// <returns></returns>
         public static IApplicationBuilder UseCommunicationTracker(this IApplicationBuilder app)
         {
             if (app == null)
@@ -23,7 +22,8 @@ namespace Calabonga.Microservices.Tracker.Extensions
 
             if (app.ApplicationServices.GetService(typeof(ITrackerContextFactory)) == null)
             {
-                throw new InvalidOperationException("Unable to find the required services. You must call the appropriate AddCorrelationId or AddDefaultCorrelationId method in ConfigureServices in the application startup code.");
+                throw new InvalidOperationException(
+                    "Unable to find the required services. You must call the appropriate AddCorrelationId or AddDefaultCorrelationId method in ConfigureServices in the application startup code.");
             }
 
             return app.UseMiddleware<TrackerMiddleware>();

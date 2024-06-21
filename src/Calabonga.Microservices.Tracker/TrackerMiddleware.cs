@@ -19,25 +19,29 @@ namespace Calabonga.Microservices.Tracker
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
         private readonly ITrackerIdGenerator _trackerIdGenerator;
-        private readonly TrackerOptions _options;
+        private readonly TrackerOptions _trackerOptions;
+        private readonly ExcludeOptions _excludeOptions;
 
         /// <summary>
         /// Creates a new instance of the TrackerMiddleware.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="logger">The <see cref="ILogger"/> instance to log to.</param>
-        /// <param name="options">The configuration options.</param>
+        /// <param name="trackerOptions">The configuration trackerOptions.</param>
+        /// <param name="excludeOptions"></param>
         /// <param name="trackerIdGenerator"></param>
         public TrackerMiddleware(
             RequestDelegate next,
             ILogger<TrackerMiddleware> logger,
-            IOptions<TrackerOptions> options,
+            IOptions<TrackerOptions> trackerOptions,
+            IOptions<ExcludeOptions> excludeOptions,
             ITrackerIdGenerator trackerIdGenerator = null)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _trackerIdGenerator = trackerIdGenerator;
-            _options = options.Value;
+            _trackerOptions = trackerOptions.Value;
+            _excludeOptions = excludeOptions.Value;
         }
 
         /// <summary>
@@ -48,6 +52,11 @@ namespace Calabonga.Microservices.Tracker
         /// <param name="trackerContextFactory">The <see cref="ITrackerContextFactory"/> which can create a <see cref="TrackerContext"/>.</param>
         public async Task Invoke(HttpContext context, ITrackerContextFactory trackerContextFactory)
         {
+            if (await IsNeedToSkip(context))
+            {
+                return;
+            }
+
             LogHelper.TrackerIdProcessingBegin(_logger);
 
             if (_trackerIdGenerator is null)
@@ -57,15 +66,14 @@ namespace Calabonga.Microservices.Tracker
                 throw new InvalidOperationException("No 'ITrackerIdGenerator' has been registered. You must either add the tracker ID services using the 'AddCommunicationTracker' extension method or you must register a suitable provider using the 'ITrackerBuilder'.");
             }
 
-            var hasTrackerIdHeader = context.Request.Headers.TryGetValue(_options.RequestHeaderName, out var cid) && !StringValues.IsNullOrEmpty(cid);
+            var hasTrackerIdHeader = context.Request.Headers.TryGetValue(_trackerOptions.RequestHeaderName, out var cid) && !StringValues.IsNullOrEmpty(cid);
 
-            if (!hasTrackerIdHeader && _options.EnforceHeader)
+            if (!hasTrackerIdHeader && _trackerOptions.EnforceHeader)
             {
                 LogHelper.EnforcedTrackerIdHeaderMissing(_logger);
 
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsync(
-                    $"The '{_options.RequestHeaderName}' request header is required, but was not found.");
+                await context.Response.WriteAsync($"The '{_trackerOptions.RequestHeaderName}' request header is required, but was not found.");
                 return;
             }
 
@@ -80,12 +88,12 @@ namespace Calabonga.Microservices.Tracker
                 LogHelper.MissingTrackerIdHeader(_logger);
             }
 
-            if (_options.IgnoreRequestHeader || RequiresGenerationOfTrackerId(hasTrackerIdHeader, cid))
+            if (_trackerOptions.IgnoreRequestHeader || RequiresGenerationOfTrackerId(hasTrackerIdHeader, cid))
             {
                 trackerId = GenerateTrackerId(context);
             }
 
-            if (!string.IsNullOrEmpty(trackerId) && _options.UpdateTraceIdentifier)
+            if (!string.IsNullOrEmpty(trackerId) && _trackerOptions.UpdateTraceIdentifier)
             {
                 LogHelper.UpdatingTraceIdentifier(_logger);
 
@@ -94,29 +102,32 @@ namespace Calabonga.Microservices.Tracker
 
             LogHelper.CreatingTrackerContext(_logger);
 
-            trackerContextFactory.Create(trackerId, _options.RequestHeaderName);
+            trackerContextFactory.Create(trackerId, _trackerOptions.RequestHeaderName);
 
-            if (_options.IncludeInResponse && !string.IsNullOrEmpty(trackerId))
+            if (_trackerOptions.IncludeInResponse && !string.IsNullOrEmpty(trackerId))
             {
-                context.Response.OnStarting(() =>
+                context.Response.OnStarting(async () =>
                 {
-                    if (context.Response.Headers.ContainsKey(_options.ResponseHeaderName))
+                    if (context.Response.Headers.ContainsKey(_trackerOptions.ResponseHeaderName))
                     {
-                        return Task.CompletedTask;
+                        return;
                     }
 
-                    LogHelper.WritingTrackerIdResponseHeader(_logger, _options.ResponseHeaderName, trackerId);
-                    context.Response.Headers.Add(_options.ResponseHeaderName, trackerId);
+                    if (await IsNeedToSkip(context))
+                    {
+                        return;
+                    }
 
-                    return Task.CompletedTask;
+                    LogHelper.WritingTrackerIdResponseHeader(_logger, _trackerOptions.ResponseHeaderName, trackerId);
+                    context.Response.Headers.Add(_trackerOptions.ResponseHeaderName, trackerId);
                 });
             }
 
-            if (_options.AddToLogger && !string.IsNullOrEmpty(_options.LoggerScopeName) && !string.IsNullOrEmpty(trackerId))
+            if (_trackerOptions.AddToLogger && !string.IsNullOrEmpty(_trackerOptions.LoggerScopeName) && !string.IsNullOrEmpty(trackerId))
             {
                 using (_logger.BeginScope(new Dictionary<string, object>
                 {
-                    [_options.LoggerScopeName] = trackerId
+                    [_trackerOptions.LoggerScopeName] = trackerId
                 }))
                 {
                     LogHelper.TrackerIdProcessingEnd(_logger, trackerId);
@@ -133,6 +144,33 @@ namespace Calabonga.Microservices.Tracker
             trackerContextFactory.Dispose();
         }
 
+        private async Task<bool> IsNeedToSkip(HttpContext context)
+        {
+            if (_excludeOptions.CheckSchemeContainsValue(context.Request.Scheme))
+            {
+                LogHelper.TrackerIdExcludesSchemeProcessing(_logger, context.Request.Scheme);
+                await _next(context);
+                return true;
+            }
+
+            if (context.Request.Host.HasValue && _excludeOptions.CheckHostContainsValue(context.Request.Host.Value))
+            {
+                LogHelper.TrackerIdExcludesHostProcessing(_logger, context.Request.Host.Value);
+                await _next(context);
+                return true;
+            }
+
+            if (!context.Request.Path.HasValue || !_excludeOptions.CheckPathContainsValue(context.Request.Path))
+            {
+                return false;
+            }
+
+            LogHelper.TrackerIdExcludesPathProcessing(_logger, context.Request.Path);
+            await _next(context);
+            return true;
+
+        }
+
         private static bool RequiresGenerationOfTrackerId(bool idInHeader, StringValues idFromHeader)
             => !idInHeader || StringValues.IsNullOrEmpty(idFromHeader);
 
@@ -140,9 +178,9 @@ namespace Calabonga.Microservices.Tracker
         {
             string trackerId;
 
-            if (_options.TrackerIdGenerator is { })
+            if (_trackerOptions.TrackerIdGenerator is { })
             {
-                trackerId = _options.TrackerIdGenerator();
+                trackerId = _trackerOptions.TrackerIdGenerator();
                 LogHelper.GeneratedHeaderUsingGeneratorFunction(_logger, trackerId);
                 return trackerId;
             }

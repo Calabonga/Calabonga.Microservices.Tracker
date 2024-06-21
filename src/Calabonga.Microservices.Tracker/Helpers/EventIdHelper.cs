@@ -30,5 +30,11 @@ namespace Calabonga.Microservices.Tracker.Helpers
         public static readonly EventId DisposingTrackerContext = new EventId(1110, "DisposingTrackerContext");
 
         public static readonly EventId WritingTrackerIdResponseHeader = new EventId(1111, "WritingTrackerIdResponseHeader");
+
+        public static readonly EventId TrackerIdExcludesPathProcessing = new EventId(1112, "TrackerIdExcludesPathProcessing");
+
+        public static readonly EventId TrackerIdExcludesHostProcessing = new EventId(1113, "TrackerIdExcludesHostProcessing");
+
+        public static readonly EventId TrackerIdExcludesSchemeProcessing = new EventId(1114, "TrackerIdExcludesSchemeProcessing");
     }
 }

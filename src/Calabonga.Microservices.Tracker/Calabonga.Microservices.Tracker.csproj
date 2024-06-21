@@ -1,18 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
-		<Version>4.0.1</Version>
+		<Version>5.0.0</Version>
 		<Authors>Calabonga</Authors>
 		<Company>Calabonga SOFT</Company>
 		<Copyright>Calabonga SOFT © 2020-$([System.DateTime]::Now.ToString(yyyy))</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIcon>logo.png</PackageIcon>
 		<PackageTags>calabonga correlationid traceid microservices request response handler httpclient cross-service communications</PackageTags>
-		<PackageReleaseNotes>Migrated to NET 7.0</PackageReleaseNotes>
+		<PackageReleaseNotes>Excludes added for some TrackerMiddleware for TrackId generation pipeline.</PackageReleaseNotes>
 		<Description>Library helps to generate a trace ID string for the cross-microservice communication. https://www.calabonga.net/blog/post/tracking-correlationid-between-microservices-asp-net-core</Description>
 	</PropertyGroup>
-
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
@@ -21,12 +19,10 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
 	</ItemGroup>
-
 	<ItemGroup>
 		<None Include="logo.png">
 			<Pack>True</Pack>
-			<PackagePath></PackagePath>
+			<PackagePath />
 		</None>
 	</ItemGroup>
-
 </Project>
